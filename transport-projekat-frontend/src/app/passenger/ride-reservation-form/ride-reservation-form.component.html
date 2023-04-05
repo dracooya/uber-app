@@ -1,0 +1,165 @@
+<div class = "modal-overlay-layer flex-column standard-border-radius" *ngIf="orderOpened">
+  <div class = "width-50 height-70 light-grey standard-border-radius">
+    <mat-stepper #stepper class = "light-grey standard-border-radius">
+      <mat-step [errorMessage]="fieldsRequiredErrorText" [stepControl]="rideBasicInfoForm">
+        <form [formGroup]="rideBasicInfoForm">
+          <ng-template matStepLabel>Unesi osnovne podatke</ng-template>
+          <div class = "label-container-small sky-blue stick-to-left flex-row white-text width-40">
+            <mat-icon matListItemIcon class = "icon">settings</mat-icon>
+            Odaberi opcije:
+          </div>
+          <br>
+          <div class = "flex-row black-text justify-items-start padding-left-2vw width-100 mat-h2 font-weight-medium">
+            Tip vozila:&nbsp;&nbsp;
+
+            <mat-select class = "width-40 select-bar black-text font-weight-medium" formControlName="vehicleType" required>
+              <mat-option value="STANDARD">Standardno</mat-option>
+              <mat-option value="LUXURY">Luksuzno</mat-option>
+              <mat-option value="VAN">Kombi</mat-option>
+            </mat-select>
+            <br>
+          </div>
+          <br>
+          <div class ="width-100 flex-row padding-left-2vw justify-items-start">
+            <mat-checkbox class="black-text fourth-times-bigger margin-right-20" formControlName="babyTransport">Prevoz dece</mat-checkbox>
+            <mat-checkbox class="black-text fourth-times-bigger" formControlName="petTransport">Prevoz ljubimaca</mat-checkbox>
+          </div>
+          <br>
+          <br>
+          <div class = "label-container-small sky-blue stick-to-left flex-row white-text width-40">
+            <mat-icon matListItemIcon class = "icon">access_time_filled</mat-icon>
+            Odaberi termin:
+          </div>
+          <br>
+          <div class ="width-100 flex-row padding-left-2vw justify-items-start">
+            <mat-checkbox class="black-text fourth-times-bigger margin-right-20"
+                          (change)="toggleDatepicker($event)" checked>Za najskorije</mat-checkbox>
+              <mat-form-field appearance="fill">
+                  <mat-label>Za kasnije</mat-label>
+                  <input matInput [ngxTimepicker]="picker" formControlName="scheduleTime"
+                         [format]="24" [disableClick]="true" readonly>
+                  <ngx-material-timepicker-toggle [for]="picker" matIconSuffix class="margin-right-2" [disabled]="!isReservation">
+                  </ngx-material-timepicker-toggle>
+                  <ngx-material-timepicker #picker [theme]="timepickerTheme" [appendToInput]="true"></ngx-material-timepicker>
+              </mat-form-field>
+          </div>
+          <br>
+          <br>
+          <div class="width-100 flex-row margin-top-1vh">
+            <button type="button" mat-button class = "bright-orange button-rounded mat-h2" (click)="close()">
+              <mat-icon class = "icon">close</mat-icon>
+              Zatvori
+            </button>
+          </div>
+        </form>
+      </mat-step>
+      <mat-step  [errorMessage]="emailFormatErrorText" [stepControl]="passengersEmailsForm">
+        <form [formGroup]="passengersEmailsForm">
+          <ng-template matStepLabel>Dodaj putnike</ng-template>
+          <div class = "label-container-small sky-blue stick-to-left flex-row white-text width-40">
+            <mat-icon matListItemIcon class = "icon">mail</mat-icon>
+            Unesi email:
+          </div>
+          <br>
+          <div class ="width-100 flex-row padding-left-2vw justify-items-start">
+            <mat-form-field appearance="fill" class = "width-50 margin-right-5">
+              <mat-label>Email</mat-label>
+              <input matInput name = "email" [matChipInputFor]="chipGrid" formControlName="email">
+            </mat-form-field>
+            <button mat-mini-fab class="bright-orange white-text box-shadow-none" type = "button" (click)="addPassenger()">
+              <mat-icon>done</mat-icon>
+            </button>
+          </div>
+          <br>
+          <br>
+          <div class = "padding-left-2vw">
+            <div class = "font-weight-heavy mat-headline-5">
+              Dodati putnici:
+            </div>
+          </div>
+          <hr>
+          <div class="flex-row width-100 height-20 justify-items-start padding-left-2vw">
+              <mat-chip-grid #chipGrid aria-label="Mail-ovi:" class="overflow-y-scroll height-20-vh width-100">
+                <mat-chip *ngFor="let passenger of passengers"
+                              (removed)="removePassenger(passenger.email)"
+                              class="mat-h2 font-weight-medium">
+                  {{passenger.email}}
+                  <button matChipRemove [attr.aria-label]="'Izbaci'">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip>
+              </mat-chip-grid>
+          </div>
+          <br>
+          <div class="width-100 flex-row margin-top-1vh">
+            <button type="button" mat-button class = "bright-orange button-rounded mat-h2" (click)="close()">
+              <mat-icon class = "icon">close</mat-icon>
+              Zatvori
+            </button>
+          </div>
+        </form>
+      </mat-step>
+      <mat-step>
+        <ng-template matStepLabel>Plaćanje</ng-template>
+        <div class = "label-container-small sky-blue stick-to-left flex-row white-text width-40">
+          <mat-icon matListItemIcon class = "icon">payments</mat-icon>
+          Podaci o plaćanju:
+        </div>
+        <br>
+        <br>
+        <div class="width-100  flex-row distance-between-max">
+          <div class="mat-h2 font-weight-medium padding-left-2vw">
+            Cena(ukupno za vožnju):
+          </div>
+          <div class="mat-h1 font-weight-heavy padding-right-2vw">
+            {{totalPrice | number:'1.2-2'}} din
+          </div>
+        </div>
+        <br>
+        <div class="width-100  flex-row distance-between-max">
+          <div class="mat-h2 font-weight-medium padding-left-2vw">
+            Cena(po osobi):
+          </div>
+          <div class="mat-h1 font-weight-heavy padding-right-2vw">
+            {{pricePerPerson | number:'1.2-2'}} din
+          </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <hr>
+        <div class="width-100 flex-row distance-between-max">
+          <div class="mat-h1 font-weight-heavy padding-left-2vw">
+            Za plaćanje:
+          </div>
+          <div class="mat-h1 font-weight-heavy padding-right-2vw">
+            {{pricePerPerson | number:'1.2-2'}} din
+          </div>
+        </div>
+        <br>
+        <br>
+        <div class="width-100 flex-row distance-between-max">
+          <div class="padding-left-2vw">
+            <button type="button" mat-button class = "bright-orange button-rounded mat-h2" (click)="close()">
+              <mat-icon class = "icon">close</mat-icon>
+              Zatvori
+            </button>
+          </div>
+          <div class="padding-right-2vw">
+            <button type="button" mat-button class = "bright-orange button-rounded mat-h2" (click)="reserve()" id="pay-button">
+              <mat-icon class = "icon">payments</mat-icon>
+              Plati
+            </button>
+          </div>
+        </div>
+      </mat-step>
+    </mat-stepper>
+  </div>
+</div>
+<app-ride-reserved-popup [popupOpened]="openSuccessPopup"
+                         [favoriteRideOrder]="reservedRide"
+                         (popupClosed)="closePopup()"></app-ride-reserved-popup>
+<app-ride-not-reserved-popup [errorMessage]="rideReservationFailureMessage" [popupOpened]="openFailPopup" (popupClosed)="closePopup()"></app-ride-not-reserved-popup>
